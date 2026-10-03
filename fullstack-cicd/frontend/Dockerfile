@@ -1,4 +1,4 @@
-# Step 1: Build React application
+# Build React application
 FROM node:24-alpine AS build
 
 WORKDIR /app
@@ -7,12 +7,14 @@ COPY package*.json ./
 
 RUN npm install
 
-COPY . .
+COPY src ./src
+COPY public ./public
+COPY index.html ./
+COPY vite.config.js ./
 
 RUN npm run build
 
-
-# Step 2: Serve React using Nginx
+# Serve React using Nginx
 FROM nginx:alpine
 
 COPY --from=build /app/dist /usr/share/nginx/html
