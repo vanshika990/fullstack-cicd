@@ -1,0 +1,26 @@
+name: Full Stack CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Build Backend Docker Image
+        run: docker build -t fullstack-backend ./fullstack-cicd/backend
+
+      - name: Build Frontend Docker Image
+        run: docker build -t fullstack-frontend ./fullstack-cicd/frontend
+
+      - name: Validate Docker Compose
+        run: docker compose -f ./fullstack-cicd/docker-compose.yml config
