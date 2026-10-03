@@ -1,18 +1,22 @@
-name: Full Stack CI
+name: Full Stack CI/CD
 
 on:
   push:
     branches:
       - main
+
   pull_request:
     branches:
       - main
 
 jobs:
+
   build:
+    name: CI - Build Docker Images
     runs-on: ubuntu-latest
 
     steps:
+
       - name: Checkout Code
         uses: actions/checkout@v4
 
@@ -24,3 +28,32 @@ jobs:
 
       - name: Validate Docker Compose
         run: docker compose -f ./fullstack-cicd/docker-compose.yml config
+
+
+  deploy:
+    name: CD - Deploy to AWS EC2
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd ~/fullstack-cicd-main/fullstack-cicd
+
+            wget -q https://github.com/vanshika990/fullstack-cicd/archive/refs/heads/main.zip -O main.zip
+
+            unzip -o main.zip
+
+            cp -r fullstack-cicd-main/fullstack-cicd/. .
+
+            rm -rf fullstack-cicd-main main.zip
+
+            docker compose down
+
+            docker compose up -d --build
