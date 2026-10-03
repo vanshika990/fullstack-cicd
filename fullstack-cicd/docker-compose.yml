@@ -1,0 +1,28 @@
+services:
+
+  mongodb:
+    image: mongo:8
+    container_name: mongodb
+    volumes:
+      - mongodb_data:/data/db
+
+  backend:
+    build: ./backend
+    container_name: backend
+    ports:
+      - "5000:5000"
+    environment:
+      MONGO_URL: mongodb://mongodb:27017/fullstackdb
+    depends_on:
+      - mongodb
+
+  frontend:
+    build: ./frontend
+    container_name: frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+
+volumes:
+  mongodb_data:
